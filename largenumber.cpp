@@ -1,11 +1,16 @@
-// FindArrangement.cpp : 定义控制台应用程序的入口点。
-//
 
-
+#ifdef APPLE
+#pragma error("define APPLE")
+#endif
 #include <iostream>
+#include "CXPrimitiveType.h"
+#ifdef _WIN32
 #include <windows.h>
 #include <process.h>
-CRITICAL_SECTION mycrisec;
+#elif defined(unix)
+#include <pthread.h>
+#endif
+
 
 int CX_CreateLargeNumber(char** result,int bits)
 {
@@ -17,13 +22,13 @@ int CX_CreateLargeNumber(char** result,int bits)
 
 int CX_SetAllValueOne(char* num,int size)
 {
-	UINT64 mytest=(-1);
-	int times=size/sizeof(UINT64);
+	CX_UINT64 mytest=(-1);
+	int times=size/sizeof(CX_UINT64);
 	for(int n=0;n<times;n++)
 	{
-		*(UINT64*)num=mytest;
+		*(CX_UINT64*)num=mytest;
 	}
-	int left=size%sizeof(UINT64);
+	int left=size%sizeof(CX_UINT64);
 	for(int n=0;n<left;n++)
 	{
 		*num=(unsigned char)((1<<8)-1);
@@ -33,13 +38,13 @@ int CX_SetAllValueOne(char* num,int size)
 
 int CX_SetAllValueZero(char* num,int size)
 {
-	UINT64 mytest=0;
-	int times=size/(sizeof(UINT64)*8);
+	CX_UINT64 mytest=0;
+	int times=size/(sizeof(CX_UINT64)*8);
 	for(int n=0;n<times;n++)
 	{
-		*(UINT64*)num=mytest;
+		*(CX_UINT64*)num=mytest;
 	}
-	int left=size%(sizeof(UINT64)*8);
+	int left=size%(sizeof(CX_UINT64)*8);
 	for(int n=0;n<left;n++)
 	{
 		*num=(unsigned char)(0);
@@ -63,7 +68,7 @@ int CX_AddOne(char* number,int bits)
 {
 	if(bits>0)
 	{
-		UINT tmp=(UINT)*number;
+		CX_UINT32 tmp=(CX_UINT32)*number;
 		tmp+=1;
 		*number=tmp;
 		if(tmp>255)
@@ -77,16 +82,16 @@ int CX_AddOne(char* number,int bits)
 
 int CX_IsAllOne(char* num,int size)
 {
-	UINT64 mytest=-1;
-	int times=size/(sizeof(UINT64)*8);
+	CX_UINT64 mytest=-1;
+	int times=size/(sizeof(CX_UINT64)*8);
 	for(int n=0;n<times;n++)
 	{
-		if(mytest!=(*(UINT64*)num))
+		if(mytest!=(*(CX_UINT64*)num))
 			return -1;
-		num+=sizeof(UINT64);
+		num+=sizeof(CX_UINT64);
 
 	}
-	int left=size%(sizeof(UINT64)*8);
+	int left=size%(sizeof(CX_UINT64)*8);
 	for(int n=0;n<left;n++)
 	{
 		if(*num!=(unsigned char)((1<<8)-1))
@@ -101,10 +106,10 @@ struct mythreadstruct
 	int end;
 };
 
-DWORD WINAPI mythread(void* p)
+CX_INT32 __stdcall mythread(void* p)
 {
 	mythreadstruct* mthd=(mythreadstruct*)p;
-	UINT64 test1,test2,test3,testnum,test=1;
+	CX_UINT64 test1,test2,test3,testnum,test=1;
 	testnum=(test<<mthd->begin);
 	while(testnum<(test<<mthd->end))
 	{
@@ -116,7 +121,7 @@ DWORD WINAPI mythread(void* p)
 
 	return 0;
 }
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
 	int *numbers,ncount=0;
 	char* large_count;
@@ -124,10 +129,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	CX_SetAllValueZero(large_count,123);
 	unsigned int *mytestint=(unsigned int*)large_count;
 	std::cout<<"isallone is "<<CX_IsAllOne(large_count,64)<<std::endl;
-	while(CX_IsAllOne(large_count,64)!=NULL)
+	/*
+	while(CX_IsAllOne(large_count,64)!=0)
 	{
 
 	}
+	*/
 /*
 
 	mythreadstruct mytestttt;
